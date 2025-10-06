@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # mi_schoolproject
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# SchoolProject
+>>>>>>> 22dead4e30e554c6dc3f90950fb31aa522b3402d

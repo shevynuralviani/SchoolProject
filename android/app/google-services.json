@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "478903510182",
+    "project_id": "simi-rq",
+    "storage_bucket": "simi-rq.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478903510182:android:60423a36e60dd2c7ca0067",
+        "android_client_info": {
+          "package_name": "com.example.mi_schoolproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478903510182-1gmpq0jbmckk25a8lnr6q479smtdoffm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOFfia0xofewydHTTvnwOv6MeG27sFY9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478903510182-1gmpq0jbmckk25a8lnr6q479smtdoffm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

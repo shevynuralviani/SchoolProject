@@ -1,0 +1,345 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    final username = _usernameController.text.trim();
+
+    final password = _passwordController.text.trim();
+
+    /// =========================
+    /// VALIDASI INPUT
+    /// =========================
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Username dan password wajib diisi")),
+      );
+
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      /// =========================
+      /// CARI USER BERDASARKAN USERNAME
+      /// =========================
+      final query =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where('username', isEqualTo: username)
+              .limit(1)
+              .get();
+
+      /// USERNAME TIDAK DITEMUKAN
+      if (query.docs.isEmpty) {
+        throw 'USERNAME_NOT_FOUND';
+      }
+
+      /// =========================
+      /// AMBIL DATA USER
+      /// =========================
+      final userData = query.docs.first.data();
+
+      final email = userData['email']?.toString() ?? "";
+
+      final role = userData['role']?.toString() ?? "";
+
+      final isActive = userData['isActive'] ?? false;
+
+      /// =========================
+      /// VALIDASI EMAIL
+      /// =========================
+      if (email.isEmpty) {
+        throw 'EMAIL_NOT_FOUND';
+      }
+
+      /// =========================
+      /// VALIDASI STATUS AKUN
+      /// =========================
+      if (isActive != true) {
+        throw 'ACCOUNT_DISABLED';
+      }
+
+      /// =========================
+      /// LOGIN FIREBASE AUTH
+      /// =========================
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      /// =========================
+      /// CEK LOGIN BERHASIL
+      /// =========================
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        throw 'LOGIN_FAILED';
+      }
+
+      if (!mounted) return;
+
+      /// =========================
+      /// PINDAH HALAMAN BERDASARKAN ROLE
+      /// =========================
+      if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/dashboard_admin');
+      } else if (role == 'guru') {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        /// ROLE TIDAK VALID
+        await FirebaseAuth.instance.signOut();
+
+        throw 'INVALID_ROLE';
+      }
+    }
+    /// =========================
+    /// ERROR FIREBASE AUTH
+    /// =========================
+    on FirebaseAuthException catch (e) {
+      String message = "Login gagal";
+
+      switch (e.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+        case 'invalid-login-credentials':
+          message = "Password salah";
+          break;
+
+        case 'user-not-found':
+          message = "Akun tidak ditemukan";
+          break;
+
+        case 'invalid-email':
+          message = "Format email tidak valid";
+          break;
+
+        case 'user-disabled':
+          message = "Akun dinonaktifkan";
+          break;
+
+        case 'too-many-requests':
+          message = "Terlalu banyak percobaan login";
+          break;
+
+        default:
+          message = "Login gagal (${e.code})";
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+    /// =========================
+    /// ERROR CUSTOM
+    /// =========================
+    catch (e) {
+      print("LOGIN ERROR: $e");
+
+      String message = "Terjadi kesalahan";
+
+      if (e == 'USERNAME_NOT_FOUND') {
+        message = "Username tidak ditemukan";
+      } else if (e == 'EMAIL_NOT_FOUND') {
+        message = "Email belum terdaftar";
+      } else if (e == 'ACCOUNT_DISABLED') {
+        message = "Akun dinonaktifkan";
+      } else if (e == 'INVALID_ROLE') {
+        message = "Role akun tidak valid";
+      } else if (e == 'LOGIN_FAILED') {
+        message = "Login gagal";
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+    /// =========================
+    /// STOP LOADING
+    /// =========================
+    finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          // ================= KIRI =================
+          Expanded(
+            child: Container(
+              color: Colors.green.shade400,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 180,
+                      height: 180,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        image: DecorationImage(
+                          image: AssetImage('images/logo_madrasah.jpeg'),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Welcome back to",
+                      style: TextStyle(color: Colors.white, fontSize: 22),
+                    ),
+                    const Text(
+                      "SIMI RQ",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ================= KANAN =================
+          Expanded(
+            child: Center(
+              child: Container(
+                width: 360,
+                padding: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Login",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Username
+                    TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        labelText: "Username",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Password
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Button Login
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade400,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: _isLoading ? null : _login,
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : const Text(
+                                  "Masuk",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/adminlogin');
+                      },
+                      child: const Text(
+                        "Masuk sebagai admin? Klik disini",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

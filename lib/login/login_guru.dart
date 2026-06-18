@@ -63,6 +63,8 @@ class _LoginPageState extends State<LoginPage> {
 
       final isActive = userData['isActive'] ?? false;
 
+      final namaKelas = userData['nama_kelas']?.toString() ?? "";
+
       /// =========================
       /// VALIDASI EMAIL
       /// =========================
@@ -102,12 +104,15 @@ class _LoginPageState extends State<LoginPage> {
       if (role == 'admin') {
         Navigator.pushReplacementNamed(context, '/dashboard_admin');
       } else if (role == 'guru') {
-        Navigator.pushReplacementNamed(context, '/dashboard');
-      } else {
-        /// ROLE TIDAK VALID
-        await FirebaseAuth.instance.signOut();
+        if (namaKelas.isEmpty) {
+          throw 'KELAS_NOT_ASSIGNED';
+        }
 
-        throw 'INVALID_ROLE';
+        Navigator.pushReplacementNamed(
+          context,
+          '/dashboard',
+          arguments: {'nama_kelas': namaKelas},
+        );
       }
     }
     /// =========================

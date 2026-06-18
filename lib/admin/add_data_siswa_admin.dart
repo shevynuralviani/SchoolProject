@@ -108,11 +108,21 @@ class _TambahDataSiswaAdminDialogState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
-                    onPressed: _simpanData,
-                    child: const Text(
-                      "Simpan",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    onPressed: _isSaving ? null : _simpanData,
+                    child:
+                        _isSaving
+                            ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              "Simpan",
+                              style: TextStyle(color: Colors.white),
+                            ),
                   ),
                 ],
               ),
@@ -162,47 +172,84 @@ class _TambahDataSiswaAdminDialogState
 
   // ================= SIMPAN DATA =================
 
+  bool _isSaving = false;
+
   Future<void> _simpanData() async {
-    if (_namaCtrl.text.isEmpty ||
-        _nisCtrl.text.isEmpty ||
-        _nisnCtrl.text.isEmpty ||
-        _tempatLahirCtrl.text.isEmpty ||
+    if (_namaCtrl.text.trim().isEmpty ||
+        _nisCtrl.text.trim().isEmpty ||
+        _nisnCtrl.text.trim().isEmpty ||
+        _tempatLahirCtrl.text.trim().isEmpty ||
+        _alamatCtrl.text.trim().isEmpty ||
+        _telpCtrl.text.trim().isEmpty ||
         _tanggalLahir == null ||
-        _alamatCtrl.text.isEmpty ||
-        _telpCtrl.text.isEmpty ||
         _kelasId == null ||
-        _jenisKelamin == null ||
-        _waliKelas == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Lengkapi semua data")));
+        _kelasNama == null ||
+        _waliKelas == null ||
+        _jenisKelamin == null) {
+      showDialog(
+        context: context,
+        builder:
+            (_) => const AlertDialog(
+              title: Text('Peringatan'),
+              content: Text('Lengkapi semua data terlebih dahulu.'),
+            ),
+      );
       return;
     }
 
-    await FirebaseFirestore.instance.collection('siswa').add({
-      "nama": _namaCtrl.text.trim(),
-      "nis": _nisCtrl.text.trim(),
-      "nisn": _nisnCtrl.text.trim(),
-      "tempat_lahir": _tempatLahirCtrl.text.trim(),
+    try {
+      setState(() {
+        _isSaving = true;
+      });
 
-      "tanggal_lahir":
-          "${_tanggalLahir!.day}-${_tanggalLahir!.month}-${_tanggalLahir!.year}",
+      await FirebaseFirestore.instance.collection('siswa').add({
+        "nama": _namaCtrl.text.trim(),
+        "nis": _nisCtrl.text.trim(),
+        "nisn": _nisnCtrl.text.trim(),
 
-      "jenis_kelamin": _jenisKelamin,
-      "alamat": _alamatCtrl.text.trim(),
-      "telp": _telpCtrl.text.trim(),
-      "kelas_id": _kelasId,
-      "nama_kelas": _kelasNama,
-      "wali_kelas": _waliKelas,
+        "jenis_kelamin": _jenisKelamin,
 
-      "created_at": FieldValue.serverTimestamp(),
-    });
+        "tempat_lahir": _tempatLahirCtrl.text.trim(),
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Data siswa berhasil ditambahkan")),
-    );
+        "tanggal_lahir":
+            "${_tanggalLahir!.day}-${_tanggalLahir!.month}-${_tanggalLahir!.year}",
 
-    Navigator.pop(context);
+        "nama_kelas": _kelasNama,
+
+        "wali_kelas": _waliKelas,
+
+        "alamat": _alamatCtrl.text.trim(),
+
+        "telephone": _telpCtrl.text.trim(),
+
+        "created_at": FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Data siswa berhasil ditambahkan")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text("Error"),
+              content: Text(e.toString()),
+            ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   // ================= TEXT FIELD =================
@@ -266,7 +313,7 @@ class _TambahDataSiswaAdminDialogState
                 docs.map((d) {
                   return DropdownMenuItem<String>(
                     value: d.id,
-                    child: Text(d['nama']),
+                    child: Text(d['nama_kelas']),
                   );
                 }).toList(),
 
@@ -278,6 +325,8 @@ class _TambahDataSiswaAdminDialogState
                       .collection('kelas')
                       .doc(v)
                       .get();
+
+              final data = kelasDoc.data() as Map<String, dynamic>;
 
               setState(() {
                 _kelasId = v;

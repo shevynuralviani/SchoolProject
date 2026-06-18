@@ -117,7 +117,9 @@ class _ManajemenUserAdminState extends State<ManajemenUserAdmin> {
         /// 1A
         /// 2B
         /// dst
-        "kelas": role == "admin" ? "" : kelas,
+        "nama_kelas": role == "admin" ? "" : kelas,
+
+        "wali_kelas": role == "admin" ? "" : nama,
 
         "isActive": true,
 
@@ -343,7 +345,9 @@ class _ManajemenUserAdminState extends State<ManajemenUserAdmin> {
                               _DataCell(data["role"] ?? "-"),
 
                               _DataCell(
-                                data["kelas"] == "" ? "-" : data["kelas"],
+                                data["nama_kelas"] == ""
+                                    ? "-"
+                                    : data["nama_kelas"],
                               ),
 
                               _DataCell(

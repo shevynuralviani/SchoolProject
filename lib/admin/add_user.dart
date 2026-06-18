@@ -40,13 +40,9 @@ class _TambahUserAdminState extends State<TambahUserAdmin> {
   @override
   void dispose() {
     _namaCtrl.dispose();
-
     _usernameCtrl.dispose();
-
     _emailCtrl.dispose();
-
     _passwordCtrl.dispose();
-
     super.dispose();
   }
 
@@ -76,11 +72,8 @@ class _TambahUserAdminState extends State<TambahUserAdmin> {
   /// =========================
   void _simpan() {
     final nama = _namaCtrl.text.trim();
-
     final username = _usernameCtrl.text.trim();
-
     final email = _emailCtrl.text.trim();
-
     final password = _passwordCtrl.text.trim();
 
     /// VALIDASI KOSONG
@@ -137,17 +130,13 @@ class _TambahUserAdminState extends State<TambahUserAdmin> {
     /// KIRIM DATA
     Navigator.pop(context, {
       "nama": nama,
-
       "username": username,
-
       "email": email,
-
       "password": password,
-
       "role": _role,
 
       /// ADMIN TIDAK PUNYA KELAS
-      "kelas": _role == "admin" ? "" : _kelas,
+      "nama_kelas": _role == "admin" ? "" : _kelas,
     });
   }
 

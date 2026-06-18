@@ -46,13 +46,25 @@ class _SidebarAdminState extends State<SidebarAdmin> {
 
           if (widget.isVisible) ...[
             const SizedBox(height: 10),
-            const Center(
-              child: CircleAvatar(radius: 36, backgroundColor: Colors.white),
+            Center(
+              child: CircleAvatar(
+                radius: 46,
+                backgroundColor: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Image.asset(
+                    'images/logo_madrasah.jpeg',
+                    width: 68,
+                    height: 68,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 10),
             const Center(
               child: Text(
-                "ADMIN PANEL\nMI RQ",
+                "ADMIN SIMI RQ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -77,7 +89,7 @@ class _SidebarAdminState extends State<SidebarAdmin> {
                   ListTile(
                     leading: const Icon(Icons.folder, color: Colors.white),
                     title: const Text(
-                      "Data Master",
+                      "Data Utama",
                       style: TextStyle(color: Colors.white),
                     ),
                     trailing: Icon(
@@ -94,13 +106,17 @@ class _SidebarAdminState extends State<SidebarAdmin> {
                   ),
                   if (_isDataMasterOpen) ...[
                     _subMenu("Data Siswa", AdminMenu.dataSiswa),
-                    _subMenu("Data Video", AdminMenu.dataVideo),
                     _subMenu("Data Alumni", AdminMenu.dataAlumni),
                     _subMenu("Data Kelas", AdminMenu.dataKelas),
                     _subMenu("Daftar Guru", AdminMenu.daftarGuru),
                   ],
                 ],
 
+                _menuItem(
+                  icon: Icons.description,
+                  title: "Surat Keterangan",
+                  menu: AdminMenu.suratKeterangan,
+                ),
                 _menuItem(
                   icon: Icons.manage_accounts,
                   title: "Manajemen User",

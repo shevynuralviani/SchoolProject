@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mi_schoolproject/admin/surat.dart';
 
 import 'sidebar_admin.dart';
 import 'admin_menu.dart';
 import 'datasiswa_admin.dart';
-import 'data_video_admin.dart';
 import 'data_alumni_admin.dart';
 import 'master_kelas_page.dart';
 import 'manajemen_user_admin.dart';
@@ -103,21 +103,21 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
     );
   }
 
-  // ================= JUDUL =================
+  // ================= JUDUL App Bar =================
   String _getTitle() {
     switch (_menuController.activeMenu) {
       case AdminMenu.dataMaster:
-        return "Data Master";
+        return "Data Utama";
       case AdminMenu.dataSiswa:
         return "Data Siswa";
-      case AdminMenu.dataVideo:
-        return "Data Video";
       case AdminMenu.dataKelas:
-        return "Master Kelas";
+        return "Data Kelas";
       case AdminMenu.daftarGuru:
         return "Daftar Guru";
       case AdminMenu.dataAlumni:
         return "Data Alumni";
+      case AdminMenu.suratKeterangan:
+        return "Surat Keterangan";
       case AdminMenu.manajemenUser:
         return "Manajemen User";
       case AdminMenu.pengumuman:
@@ -126,7 +126,7 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
         return "Akun Saya";
       case AdminMenu.beranda:
       default:
-        return "Dashboard Admin";
+        return "Beranda Admin";
     }
   }
 
@@ -137,14 +137,14 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
         return DataMasterPage(menuController: _menuController);
       case AdminMenu.dataSiswa:
         return const DataSiswaAdminContent();
-      case AdminMenu.dataVideo:
-        return const VideoGalleryContent();
       case AdminMenu.dataKelas:
         return const MasterKelasPage();
       case AdminMenu.daftarGuru:
         return const DataGuruAdminContent();
       case AdminMenu.dataAlumni:
         return const DataAlumniAdmin();
+      case AdminMenu.suratKeterangan:
+        return const SuratKeteranganPage();
       case AdminMenu.manajemenUser:
         return const ManajemenUserAdmin();
       case AdminMenu.pengumuman:
@@ -161,14 +161,18 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
   Widget _dashboardHome() {
     return Column(
       children: [
+        const SizedBox(height: 20),
         Container(
           width: double.infinity,
-          color: Colors.green,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.amber,
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: const Text(
-            "Selamat Datang Admin di Sistem Informasi MI Raudlatul Qur'an Batam",
+            "Selamat Datang Di Sistem Informasi MI Raudatul Qur'an",
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -189,7 +193,7 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
         children: [
           _DashboardCard(
             icon: Icons.storage,
-            title: "Data Master",
+            title: "Data Utama",
             onTap: () => _menuController.setMenu(AdminMenu.dataMaster),
           ),
           _DashboardCard(
@@ -222,18 +226,8 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
                 }
               }
 
-              return _PengumumanCard(
-                tanggal: tanggal,
-                deskripsi: deskripsi,
-                onTap: () => _menuController.setMenu(AdminMenu.pengumuman),
-              );
+              return _PengumumanCard(tanggal: tanggal, deskripsi: deskripsi);
             },
-          ),
-
-          _DashboardCard(
-            icon: Icons.video_library,
-            title: "Kelola Video",
-            onTap: () => _menuController.setMenu(AdminMenu.dataVideo),
           ),
         ],
       ),
@@ -296,78 +290,69 @@ class _DashboardCard extends StatelessWidget {
 class _PengumumanCard extends StatelessWidget {
   final String tanggal;
   final String deskripsi;
-  final VoidCallback onTap;
 
-  const _PengumumanCard({
-    required this.tanggal,
-    required this.deskripsi,
-    required this.onTap,
-  });
+  const _PengumumanCard({required this.tanggal, required this.deskripsi});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 420,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color.fromARGB(255, 125, 46, 46),
-              Color.fromARGB(255, 187, 102, 102),
-            ],
+    return Container(
+      width: 420,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color.fromARGB(255, 125, 46, 46),
+            Color.fromARGB(255, 187, 102, 102),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.campaign, color: Colors.white, size: 40),
+
+          const SizedBox(width: 16),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Pengumuman Terbaru",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  tanggal,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  deskripsi,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.campaign, color: Colors.white, size: 40),
-
-            const SizedBox(width: 16),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Pengumuman Terbaru",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    tanggal,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    deskripsi,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 15),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

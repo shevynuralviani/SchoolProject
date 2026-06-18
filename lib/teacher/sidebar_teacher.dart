@@ -94,49 +94,6 @@ class _SidebarTeacherState extends State<SidebarTeacher> {
                   title: "Data Siswa",
                   menu: TeacherMenu.dataSiswa,
                 ),
-
-                // ===== PELAYANAN SISWA =====
-                ListTile(
-                  leading: const Icon(Icons.support_agent, color: Colors.white),
-                  title:
-                      widget.isVisible
-                          ? const Text(
-                            "Pelayanan Siswa",
-                            style: TextStyle(color: Colors.white),
-                          )
-                          : null,
-                  trailing:
-                      widget.isVisible
-                          ? Icon(
-                            _isPelayananOpen
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
-                            color: Colors.white,
-                          )
-                          : null,
-                  onTap: () {
-                    if (!widget.isVisible) return;
-                    setState(() {
-                      _isPelayananOpen = !_isPelayananOpen;
-                    });
-                  },
-                ),
-
-                if (widget.isVisible && _isPelayananOpen) ...[
-                  _subMenu("Surat Pernyataan", TeacherMenu.suratIzin),
-                ],
-
-                _menuItem(
-                  icon: Icons.video_collection,
-                  title: "Video Edukasi",
-                  menu: TeacherMenu.video,
-                ),
-
-                _menuItem(
-                  icon: Icons.assignment,
-                  title: "Absen Siswa",
-                  menu: TeacherMenu.absen,
-                ),
               ],
             ),
           ),

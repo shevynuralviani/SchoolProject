@@ -1,4 +1,4 @@
-enum TeacherMenu { beranda, dataSiswa, suratIzin, video, akunsaya, absen }
+enum TeacherMenu { beranda, dataSiswa, akunsaya }
 
 class TeacherMenuController {
   TeacherMenu _activeMenu = TeacherMenu.beranda;

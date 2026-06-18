@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'sidebar_teacher.dart';
 import 'teacher_menu.dart';
 
 import 'data_siswa.dart';
-import 'vidio.dart';
 import 'akun_saya.dart';
-import 'surat_keterangan.dart';
-import 'absen_siswa.dart';
 
 class DashboardTeacherPage extends StatefulWidget {
   const DashboardTeacherPage({super.key});
@@ -19,6 +19,28 @@ class DashboardTeacherPage extends StatefulWidget {
 class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
   bool _isSidebarVisible = true;
   final TeacherMenuController _menuController = TeacherMenuController();
+
+  String? _kelasGuru;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGuru();
+  }
+
+  // ================= AMBIL DATA GURU LOGIN =================
+  Future<void> _loadGuru() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+    if (!doc.exists) return;
+
+    setState(() {
+      _kelasGuru = doc['nama_kelas'];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +57,6 @@ class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
               });
             },
             menuController: _menuController,
-
             onMenuChanged: (_) {
               setState(() {});
             },
@@ -66,13 +87,11 @@ class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // ===== JUDUL =====
           Text(
             _getTitle(),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
-          // ===== MENU AKUN =====
           PopupMenuButton<String>(
             offset: const Offset(0, 50),
             onSelected: (value) {
@@ -107,37 +126,22 @@ class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
     switch (_menuController.activeMenu) {
       case TeacherMenu.dataSiswa:
         return "Data Siswa";
-      case TeacherMenu.video:
-        return "Video Edukasi";
       case TeacherMenu.akunsaya:
         return "Akun Saya";
-      case TeacherMenu.suratIzin:
-        return "Pengajuan Surat Keterangan";
-      case TeacherMenu.absen:
-        return "Absensi Siswa Siswi";
       case TeacherMenu.beranda:
       default:
         return "Beranda";
     }
   }
 
-  // ================= BUILD CONTENT (KUNCI UTAMA) =================
+  // ================= CONTENT =================
   Widget _buildContent() {
     switch (_menuController.activeMenu) {
       case TeacherMenu.dataSiswa:
         return const DataSiswaPage();
 
-      case TeacherMenu.video:
-        return const VideoGalleryTeacher();
-
       case TeacherMenu.akunsaya:
         return const AkunGuruPage();
-
-      case TeacherMenu.suratIzin:
-        return const SuratKeteranganPage();
-
-      case TeacherMenu.absen:
-        return const AbsensiPage();
 
       case TeacherMenu.beranda:
       default:
@@ -147,57 +151,228 @@ class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
 
   // ================= DASHBOARD HOME =================
   Widget _dashboardHome() {
-    return Column(
-      children: [
-        // ===== HEADER =====
-        Container(
-          width: double.infinity,
-          color: Colors.amber,
-          padding: const EdgeInsets.all(16),
-          child: const Text(
-            "Selamat Datang Di Sistem Informasi MI Raudatul Qur'an",
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Text(
+              "Selamat Datang Di Sistem Informasi MI Raudatul Qur'an",
+              style: TextStyle(
+                fontSize: 22,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
 
-        // ===== CARD MENU =====
-        Expanded(
-          child: Padding(
+          const SizedBox(height: 20),
+
+          // ================= STATISTIK =================
+          Row(
+            children: [
+              Expanded(child: _jumlahSiswaGuruCard()),
+              const SizedBox(width: 16),
+              Expanded(child: _jumlahPengumumanCard()),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // ================= PENGUMUMAN =================
+          _pengumumanTerbaru(),
+          const SizedBox(height: 20),
+          _pengumumanTersedia(),
+
+          Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(20),
-            child: Wrap(
-              spacing: 20,
-              runSpacing: 20,
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Row(
               children: [
-                _dashboardCard(Icons.calendar_month, "Kalender Akademik"),
-
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _menuController.setMenu(TeacherMenu.video);
-                    });
-                  },
-                  child: _dashboardCard(Icons.video_library, "Video Edukasi"),
+                Icon(Icons.info_outline, color: Colors.green, size: 35),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Gunakan menu Data Siswa untuk melihat data siswa kelas Anda.",
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  // ================= DASHBOARD CARD =================
-  Widget _dashboardCard(IconData icon, String title, {bool wide = false}) {
+  Widget _pengumumanTerbaru() {
     return Container(
-      width: wide ? 420 : 260,
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: StreamBuilder<QuerySnapshot>(
+        stream:
+            FirebaseFirestore.instance
+                .collection('pengumuman')
+                .orderBy('createdAt', descending: true)
+                .limit(5)
+                .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Pengumuman Terbaru",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+
+              if (docs.isEmpty) const Text("Belum ada pengumuman"),
+
+              ...docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+
+                final judul =
+                    (data['deskripsi'] ?? '').toString().isEmpty
+                        ? '(Tanpa Judul)'
+                        : data['deskripsi'].toString();
+
+                final date = (data['createdAt'] as Timestamp?)?.toDate();
+
+                final tanggal =
+                    date != null
+                        ? DateFormat('dd MMM yyyy - HH:mm').format(date)
+                        : '-';
+
+                return ListTile(
+                  leading: const Icon(
+                    Icons.notifications,
+                    color: Colors.orange,
+                  ),
+                  title: Text(judul),
+                  subtitle: Text(tanggal),
+                );
+              }).toList(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _pengumumanTersedia() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: StreamBuilder<QuerySnapshot>(
+        stream:
+            FirebaseFirestore.instance
+                .collection('pengumuman')
+                .orderBy('createdAt', descending: true)
+                .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Pengumuman Tersedia",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(),
+
+              if (docs.isEmpty) const Text("Belum ada pengumuman"),
+
+              ...docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+
+                final judul =
+                    (data['deskripsi'] ?? '').toString().isEmpty
+                        ? '(Tanpa Judul)'
+                        : data['deskripsi'].toString();
+
+                return Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.campaign),
+                    title: Text(judul),
+                  ),
+                );
+              }).toList(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ================= JUMLAH SISWA SESUAI KELAS GURU =================
+  Widget _jumlahSiswaGuruCard() {
+    if (_kelasGuru == null) {
+      return _dashboardCard(Icons.people, "Jumlah Siswa\n0");
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('siswa')
+              .where('nama_kelas', isEqualTo: _kelasGuru)
+              .snapshots(),
+      builder: (context, snapshot) {
+        final total = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+        return _dashboardCard(Icons.people, "Jumlah Siswa\n$total");
+      },
+    );
+  }
+
+  // ================= JUMLAH PENGUMUMAN =================
+  Widget _jumlahPengumumanCard() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('pengumuman').snapshots(),
+      builder: (context, snapshot) {
+        final total = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+        return _dashboardCard(Icons.campaign, "Pengumuman\n$total");
+      },
+    );
+  }
+
+  // ================= CARD =================
+  Widget _dashboardCard(IconData icon, String title) {
+    return Container(
       height: 120,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
@@ -205,7 +380,6 @@ class _DashboardTeacherPageState extends State<DashboardTeacherPage> {
             offset: const Offset(0, 4),
           ),
         ],
-        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [

@@ -22,11 +22,6 @@ class DataMasterPage extends StatelessWidget {
             () => menuController.setMenu(AdminMenu.dataSiswa),
           ),
           _item(
-            "Video",
-            Icons.video_library,
-            () => menuController.setMenu(AdminMenu.dataVideo),
-          ),
-          _item(
             "Alumni",
             Icons.groups,
             () => menuController.setMenu(AdminMenu.dataAlumni),
@@ -40,11 +35,6 @@ class DataMasterPage extends StatelessWidget {
             "Guru",
             Icons.person,
             () => menuController.setMenu(AdminMenu.daftarGuru),
-          ),
-          _item(
-            "Tahun Lulus",
-            Icons.event_available,
-            () => menuController.setMenu(AdminMenu.dataTahunLulus),
           ),
         ],
       ),

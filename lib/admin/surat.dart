@@ -41,10 +41,9 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
     }
   }
 
-  /// ================= PRINT ULANG (PAKAI FUNGSI DARI TAMBAH SURAT) =================
+  /// ================= PRINT ULANG =================
   Future<void> printUlangPdf(Map<String, dynamic> data) async {
     try {
-      /// PAKAI GENERATOR DARI tambah_surat.dart
       final Uint8List bytes = await generatePdfFromData(data);
 
       final blob = html.Blob([bytes], 'application/pdf');
@@ -55,6 +54,23 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal print: $e")));
+    }
+  }
+
+  /// ================= DELETE SURAT =================
+  Future<void> deleteSurat(String docId) async {
+    try {
+      await FirebaseFirestore.instance.collection("surat").doc(docId).delete();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Surat berhasil dihapus")));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal menghapus: $e")));
     }
   }
 
@@ -105,6 +121,7 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                         .collection("surat")
                         .orderBy("createdAt", descending: true)
                         .snapshots(),
+
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -136,6 +153,7 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                             dataRowMinHeight: 40,
                             dataRowMaxHeight: 60,
 
+                            /// ===== HEADER (DITAMBAH AKSI) =====
                             columns: const [
                               DataColumn(label: Text("No")),
                               DataColumn(label: Text("Jenis Surat")),
@@ -143,11 +161,15 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                               DataColumn(label: Text("Tahun Ajaran")),
                               DataColumn(label: Text("Tanggal Pembuatan")),
                               DataColumn(label: Text("File")),
+                              DataColumn(label: Text("Aksi")),
                             ],
 
+                            /// ===== ROW DATA =====
                             rows: List.generate(docs.length, (index) {
                               final data =
                                   docs[index].data() as Map<String, dynamic>;
+
+                              final docId = docs[index].id;
 
                               return DataRow(
                                 cells: [
@@ -159,7 +181,7 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                                     Text(formatTanggal(data["createdAt"])),
                                   ),
 
-                                  /// ===== PRINT ULANG =====
+                                  /// ===== PRINT =====
                                   DataCell(
                                     IconButton(
                                       icon: const Icon(
@@ -168,6 +190,58 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                                       ),
                                       onPressed: () async {
                                         await printUlangPdf(data);
+                                      },
+                                    ),
+                                  ),
+
+                                  /// ===== DELETE =====
+                                  DataCell(
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text(
+                                                "Konfirmasi Hapus",
+                                              ),
+                                              content: const Text(
+                                                "Apakah kamu yakin ingin menghapus surat ini?",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text("Batal"),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                  onPressed: () async {
+                                                    Navigator.pop(
+                                                      context,
+                                                    ); // tutup dialog dulu
+                                                    await deleteSurat(docId);
+                                                  },
+                                                  child: const Text(
+                                                    "Hapus",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
                                       },
                                     ),
                                   ),

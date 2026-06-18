@@ -138,8 +138,14 @@ class _DataSiswaAdminContentState extends State<DataSiswaAdminContent> {
 
                               final filteredDocs =
                                   docs.where((doc) {
+                                    final data =
+                                        doc.data() as Map<String, dynamic>;
+
                                     final nama =
-                                        doc['nama'].toString().toLowerCase();
+                                        (data['nama_kelas'] ?? '')
+                                            .toString()
+                                            .toLowerCase();
+
                                     return nama.contains(
                                       _searchText.toLowerCase(),
                                     );
@@ -179,7 +185,7 @@ class _DataSiswaAdminContentState extends State<DataSiswaAdminContent> {
                                           _Cell(data['nama_kelas'] ?? "-"),
                                           _Cell(data['wali_kelas'] ?? "-"),
                                           _Cell(data['alamat'] ?? "-"),
-                                          _Cell(data['telp'] ?? "-"),
+                                          _Cell(data['telephone'] ?? "-"),
 
                                           _ActionCell(
                                             onEdit: () {
@@ -363,7 +369,7 @@ class _EditDataSiswaDialogState extends State<EditDataSiswaDialog> {
       text: widget.data['tanggal_lahir'],
     );
     alamatController = TextEditingController(text: widget.data['alamat']);
-    telpController = TextEditingController(text: widget.data['telp']);
+    telpController = TextEditingController(text: widget.data['telephone']);
 
     jenisKelamin = widget.data['jenis_kelamin'];
   }
@@ -380,7 +386,7 @@ class _EditDataSiswaDialogState extends State<EditDataSiswaDialog> {
           "tempat_lahir": tempatLahirController.text,
           "tanggal_lahir": tanggalLahirController.text,
           "alamat": alamatController.text,
-          "telp": telpController.text,
+          "telephone": telpController.text,
         });
 
     Navigator.pop(context);

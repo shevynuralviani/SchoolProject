@@ -180,6 +180,129 @@ class _PengumumanAdminPageState extends State<PengumumanAdminPage> {
                   ),
                 ],
               ),
+
+              const SizedBox(height: 40),
+
+              const Divider(),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "Daftar Pengumuman",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 15),
+
+              SizedBox(
+                height: 400,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream:
+                      FirebaseFirestore.instance
+                          .collection("pengumuman")
+                          .orderBy("createdAt", descending: true)
+                          .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text("Belum ada pengumuman"));
+                    }
+
+                    final docs = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      itemCount: docs.length,
+                      itemBuilder: (context, index) {
+                        final doc = docs[index];
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        String tanggal = "-";
+
+                        if (data["tanggal"] != null) {
+                          final tgl = (data["tanggal"] as Timestamp).toDate();
+
+                          tanggal = "${tgl.day}-${tgl.month}-${tgl.year}";
+                        }
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: ListTile(
+                            title: Text(
+                              tanggal,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Text(data["deskripsi"] ?? ""),
+                            ),
+
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                final konfirmasi = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text("Hapus Pengumuman"),
+                                      content: const Text(
+                                        "Yakin ingin menghapus pengumuman ini?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, false);
+                                          },
+                                          child: const Text("Batal"),
+                                        ),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(context, true);
+                                          },
+                                          child: const Text(
+                                            "Hapus",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (konfirmasi == true) {
+                                  await FirebaseFirestore.instance
+                                      .collection("pengumuman")
+                                      .doc(doc.id)
+                                      .delete();
+
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Pengumuman berhasil dihapus",
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),

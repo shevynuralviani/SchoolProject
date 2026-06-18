@@ -8,11 +8,9 @@ import 'teacher/dashboard.dart';
 import 'admin/dashboard_admin.dart';
 import 'login/login_admin.dart';
 import 'teacher/data_siswa.dart';
-import 'teacher/surat_keterangan.dart';
-import 'teacher/vidio.dart';
-import 'teacher/tambah_surat.dart';
+import 'admin/surat.dart';
+import 'admin/tambah_surat.dart';
 import 'teacher/profile.dart';
-import 'teacher/absen_siswa.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,8 +42,6 @@ class MyApp extends StatelessWidget {
         '/surat/tambah': (context) => const FormTambahSuratKeterangan(),
         '/akun': (context) => const AkunPage(),
         '/data': (context) => const DataSiswaPage(),
-        '/video': (context) => const VideoGalleryTeacher(),
-        '/absen': (context) => const AbsensiPage(),
       },
     );
   }

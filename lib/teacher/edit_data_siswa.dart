@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class TambahDataSiswaPage extends StatefulWidget {
-  const TambahDataSiswaPage({super.key});
+class EditDataSiswaPage extends StatefulWidget {
+  final String? siswaId;
+  final Map<String, dynamic>? dataSiswa;
+
+  const EditDataSiswaPage({super.key, this.siswaId, this.dataSiswa});
 
   @override
-  State<TambahDataSiswaPage> createState() => _TambahDataSiswaPageState();
+  State<EditDataSiswaPage> createState() => _EditDataSiswaPageState();
 }
 
-class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
+class _EditDataSiswaPageState extends State<EditDataSiswaPage> {
   // ================= CONTROLLER =================
   final _namaCtrl = TextEditingController();
   final _nisCtrl = TextEditingController();
@@ -18,8 +21,8 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
   final _alamatCtrl = TextEditingController();
   final _telpCtrl = TextEditingController();
 
-  final TextEditingController _kelasCtrl = TextEditingController();
-  final TextEditingController _waliCtrl = TextEditingController();
+  final _kelasCtrl = TextEditingController();
+  final _waliCtrl = TextEditingController();
 
   // ================= STATE =================
   String? _jenisKelamin;
@@ -27,10 +30,37 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
   bool _loadingKelas = true;
   bool _isSaving = false;
 
+  bool get isEdit => widget.siswaId != null;
+
   @override
   void initState() {
     super.initState();
     _loadDataGuru();
+
+    if (isEdit && widget.dataSiswa != null) {
+      final data = widget.dataSiswa!;
+
+      _namaCtrl.text = data['nama'] ?? '';
+      _nisCtrl.text = data['nis'] ?? '';
+      _nisnCtrl.text = data['nisn'] ?? '';
+      _tempatLahirCtrl.text = data['tempat_lahir'] ?? '';
+      _alamatCtrl.text = data['alamat'] ?? '';
+      _telpCtrl.text = data['telephone'] ?? '';
+      _kelasCtrl.text = data['nama_kelas'] ?? '';
+      _waliCtrl.text = data['nama_guru'] ?? '';
+      _jenisKelamin = data['jenis_kelamin'];
+
+      if (data['tanggal_lahir'] != null) {
+        final parts = (data['tanggal_lahir'] as String).split('-');
+        if (parts.length == 3) {
+          _tanggalLahir = DateTime(
+            int.parse(parts[2]),
+            int.parse(parts[1]),
+            int.parse(parts[0]),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -51,13 +81,15 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // ambil data user (kelas)
       final userDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       final kelasNama = userDoc.data()?['nama_kelas'];
 
-      if (kelasNama == null || kelasNama.isEmpty) return;
+      if (kelasNama == null || kelasNama.isEmpty) {
+        setState(() => _loadingKelas = false);
+        return;
+      }
 
       final kelasQuery =
           await FirebaseFirestore.instance
@@ -66,20 +98,19 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
               .limit(1)
               .get();
 
-      if (kelasQuery.docs.isEmpty) return;
+      if (kelasQuery.docs.isNotEmpty) {
+        final kelasData = kelasQuery.docs.first.data();
 
-      final kelasData = kelasQuery.docs.first.data();
-
-      setState(() {
-        _kelasCtrl.text = kelasNama;
-        _waliCtrl.text = kelasData['nama_guru'] ?? '';
-
-        _loadingKelas = false;
-      });
+        setState(() {
+          _kelasCtrl.text = kelasNama;
+          _waliCtrl.text = kelasData['nama_guru'] ?? '';
+          _loadingKelas = false;
+        });
+      } else {
+        setState(() => _loadingKelas = false);
+      }
     } catch (e) {
-      setState(() {
-        _loadingKelas = false;
-      });
+      setState(() => _loadingKelas = false);
     }
   }
 
@@ -93,13 +124,11 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
     );
 
     if (picked != null) {
-      setState(() {
-        _tanggalLahir = picked;
-      });
+      setState(() => _tanggalLahir = picked);
     }
   }
 
-  // ================= SIMPAN DATA =================
+  // ================= SIMPAN / UPDATE =================
   Future<void> _simpanData() async {
     if (_namaCtrl.text.isEmpty ||
         _nisCtrl.text.isEmpty ||
@@ -118,7 +147,7 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
     try {
       setState(() => _isSaving = true);
 
-      await FirebaseFirestore.instance.collection('siswa').add({
+      final data = {
         "nama": _namaCtrl.text.trim(),
         "nis": _nisCtrl.text.trim(),
         "nisn": _nisnCtrl.text.trim(),
@@ -130,15 +159,32 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
         "nama_guru": _waliCtrl.text,
         "alamat": _alamatCtrl.text.trim(),
         "telephone": _telpCtrl.text.trim(),
-        "created_at": FieldValue.serverTimestamp(),
-      });
+      };
+
+      if (isEdit) {
+        await FirebaseFirestore.instance
+            .collection('siswa')
+            .doc(widget.siswaId)
+            .update(data);
+      } else {
+        await FirebaseFirestore.instance.collection('siswa').add({
+          ...data,
+          "created_at": FieldValue.serverTimestamp(),
+        });
+      }
 
       if (!mounted) return;
 
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Data siswa berhasil ditambahkan")),
+        SnackBar(
+          content: Text(
+            isEdit
+                ? "Data siswa berhasil diupdate"
+                : "Data siswa berhasil ditambahkan",
+          ),
+        ),
       );
     } catch (e) {
       _showError(e.toString());
@@ -171,16 +217,18 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
           padding: const EdgeInsets.all(30),
           child: Column(
             children: [
-              const Text(
-                "Tambah Data Siswa",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Text(
+                isEdit ? "Edit Data Siswa" : "Tambah Data Siswa",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 25),
 
               Row(
                 children: [
-                  // KIRI
                   Expanded(
                     child: Column(
                       children: [
@@ -195,7 +243,6 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
 
                   const SizedBox(width: 20),
 
-                  // KANAN
                   Expanded(
                     child: Column(
                       children: [
@@ -237,9 +284,9 @@ class _TambahDataSiswaPageState extends State<TambahDataSiswaPage> {
                                 color: Colors.white,
                               ),
                             )
-                            : const Text(
-                              "Simpan",
-                              style: TextStyle(color: Colors.white),
+                            : Text(
+                              isEdit ? "Update" : "Simpan",
+                              style: const TextStyle(color: Colors.white),
                             ),
                   ),
                 ],

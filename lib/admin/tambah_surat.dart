@@ -230,123 +230,6 @@ class _FormTambahSuratKeteranganState extends State<FormTambahSuratKeterangan> {
     return snapshot.docs.map((e) => e["nama"].toString()).toList();
   }
 
-  /// ================= PDF =================
-  Future<Uint8List> generatePdf() async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build:
-            (context) => pw.Padding(
-              padding: const pw.EdgeInsets.all(24),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  /// ===== KOP SURAT =====
-                  pw.Center(
-                    child: pw.Column(
-                      children: [
-                        pw.Text(
-                          "LEMBAGA PENDIDIKAN RAUDLATUL QUR'AN BATAM",
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Text(
-                          "MADRASAH IBTIDAIYAH RAUDLATUL QUR'AN",
-                          style: pw.TextStyle(
-                            fontSize: 12,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          "Nomor Pokok Sekolah Nasional (NPSN) : 60706116",
-                        ),
-                        pw.Text(
-                          "Nomor Statistik Madrasah (NSM) : 111221710009",
-                        ),
-                        pw.Text("TERAKREDITASI : A"),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          "Jl. Bida Ayu Pintu 1 Blok S No.153, Mangsang, Sei Beduk, Kota Batam",
-                          textAlign: pw.TextAlign.center,
-                        ),
-                        pw.Text(
-                          "Website: https://raudlatulquranbatam.sch.id | No HP: 0853-3833-9347",
-                          textAlign: pw.TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  pw.Divider(thickness: 2),
-                  pw.SizedBox(height: 20),
-
-                  /// ===== JUDUL =====
-                  pw.Center(
-                    child: pw.Text(
-                      "SURAT KETERANGAN",
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  pw.SizedBox(height: 20),
-
-                  pw.Text("Nomor : ${nomorSuratController.text}"),
-                  pw.SizedBox(height: 16),
-
-                  pw.Text(
-                    "Yang bertanda tangan di bawah ini menerangkan bahwa:",
-                  ),
-
-                  pw.SizedBox(height: 12),
-
-                  pw.Text("Nama : ${namaController.text}"),
-                  pw.Text("NISN : ${nisnController.text}"),
-                  pw.Text("Kelas : ${kelasController.text}"),
-                  pw.Text("TTL : ${ttlController.text}"),
-                  pw.Text("Jenis Kelamin : ${jenisKelaminController.text}"),
-                  pw.Text("Alamat : ${alamatController.text}"),
-
-                  pw.SizedBox(height: 16),
-
-                  pw.Text(
-                    "Adalah benar siswa kami yang masih aktif pada tahun ajaran ${tahunAjaranController.text}.",
-                  ),
-
-                  pw.SizedBox(height: 12),
-
-                  pw.Text("Surat ini dibuat untuk keperluan:"),
-                  pw.Text(keperluanController.text),
-
-                  pw.SizedBox(height: 40),
-
-                  pw.Align(
-                    alignment: pw.Alignment.centerRight,
-                    child: pw.Column(
-                      children: [
-                        pw.Text(
-                          "Batam, ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}",
-                        ),
-                        pw.SizedBox(height: 40),
-                        pw.Text("Kepala Sekolah"),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-      ),
-    );
-
-    return pdf.save();
-  }
-
   /// ================= PRINT (WEB) =================
   void printPdf(Uint8List bytes) {
     final blob = html.Blob([bytes], 'application/pdf');
@@ -359,13 +242,7 @@ class _FormTambahSuratKeteranganState extends State<FormTambahSuratKeterangan> {
   /// ================= SIMPAN =================
   Future<void> simpanData() async {
     try {
-      final pdfData = await generatePdf();
-
-      /// PRINT LANGSUNG
-      printPdf(pdfData);
-
-      /// SIMPAN FIRESTORE
-      await FirebaseFirestore.instance.collection("surat").add({
+      final dataSurat = {
         "nama": namaController.text,
         "nisn": nisnController.text,
         "nama_kelas": kelasController.text,
@@ -376,8 +253,21 @@ class _FormTambahSuratKeteranganState extends State<FormTambahSuratKeterangan> {
         "keperluan": keperluanController.text,
         "tahunAjaran": tahunAjaranController.text,
         "jenisSurat": jenisSurat,
+      };
+
+      /// GENERATE PDF DARI MAP
+      final pdfData = await generatePdfFromData(dataSurat);
+
+      /// PRINT
+      printPdf(pdfData);
+
+      /// SIMPAN KE FIRESTORE
+      await FirebaseFirestore.instance.collection("surat").add({
+        ...dataSurat,
         "createdAt": FieldValue.serverTimestamp(),
       });
+
+      if (!mounted) return;
 
       Navigator.pop(context);
 
@@ -385,6 +275,8 @@ class _FormTambahSuratKeteranganState extends State<FormTambahSuratKeterangan> {
         const SnackBar(content: Text("Surat berhasil dibuat & siap print")),
       );
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));

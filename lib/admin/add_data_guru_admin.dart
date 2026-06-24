@@ -144,7 +144,7 @@ class _TambahDataGuruAdminDialogState extends State<TambahDataGuruAdminDialog> {
                         }
                       },
                       child: Text(
-                        isEdit ? "Update" : "Simpan",
+                        isEdit ? "Simpan" : "Simpan",
                         style: const TextStyle(color: Colors.white),
                       ),
                     ),

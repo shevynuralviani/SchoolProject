@@ -216,7 +216,7 @@ class _TambahDataSiswaAdminDialogState
 
         "nama_kelas": _kelasNama,
 
-        "wali_kelas": _waliKelas,
+        "nama_guru": _waliKelas,
 
         "alamat": _alamatCtrl.text.trim(),
 

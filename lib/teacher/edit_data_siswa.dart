@@ -181,7 +181,7 @@ class _EditDataSiswaPageState extends State<EditDataSiswaPage> {
         SnackBar(
           content: Text(
             isEdit
-                ? "Data siswa berhasil diupdate"
+                ? "Data siswa berhasil diperbarui"
                 : "Data siswa berhasil ditambahkan",
           ),
         ),
@@ -285,7 +285,7 @@ class _EditDataSiswaPageState extends State<EditDataSiswaPage> {
                               ),
                             )
                             : Text(
-                              isEdit ? "Update" : "Simpan",
+                              isEdit ? "Simpan" : "Simpan",
                               style: const TextStyle(color: Colors.white),
                             ),
                   ),

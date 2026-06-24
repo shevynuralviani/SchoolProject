@@ -10,7 +10,7 @@ import 'login/login_admin.dart';
 import 'teacher/data_siswa.dart';
 import 'admin/surat.dart';
 import 'admin/tambah_surat.dart';
-import 'teacher/profile.dart';
+import 'teacher/profile_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

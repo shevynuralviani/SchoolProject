@@ -262,7 +262,7 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                                           _Cell(data['tempat_lahir'] ?? "-"),
                                           _Cell(data['tanggal_lahir'] ?? "-"),
                                           _Cell(data['nama_kelas'] ?? "-"),
-                                          _Cell(data['wali_kelas'] ?? "-"),
+                                          _Cell(data['nama_guru'] ?? "-"),
                                           _Cell(data['alamat'] ?? "-"),
                                           _Cell(data['telephone'] ?? "-"),
 

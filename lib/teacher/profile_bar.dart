@@ -48,7 +48,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                 children: [
                   Icon(Icons.logout, color: Colors.red),
                   SizedBox(width: 10),
-                  Text("Logout"),
+                  Text("Keluar"),
                 ],
               ),
             ),

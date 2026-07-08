@@ -179,218 +179,197 @@ class _LoginAdminState extends State<LoginAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          /// =========================
-          /// SISI KIRI
-          /// =========================
-          Expanded(
-            flex: 1,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-            child: Container(
-              color: const Color(0xFFF17B0D),
+    final bool isMobile = screenWidth < 700;
 
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-
-                  children: [
-                    Container(
-                      width: 180,
-                      height: 180,
-
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-
-                        color: Colors.white,
-
-                        image: DecorationImage(
-                          image: AssetImage('images/logo_madrasah.jpeg'),
-
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      "Welcome back to",
-
-                      style: TextStyle(
-                        color: Colors.white,
-
-                        fontSize: 22,
-
-                        letterSpacing: 1,
-                      ),
-                    ),
-
-                    const Text(
-                      "SIMI RQ",
-
-                      style: TextStyle(
-                        color: Colors.white,
-
-                        fontSize: 36,
-
-                        fontWeight: FontWeight.bold,
-
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
+    Widget leftSection = Container(
+      color: const Color(0xFFF17B0D),
+      padding: const EdgeInsets.all(30),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: isMobile ? 120 : 180,
+              height: isMobile ? 120 : 180,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                image: DecorationImage(
+                  image: AssetImage('images/logo_madrasah.jpeg'),
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
-          ),
 
-          /// =========================
-          /// SISI KANAN
-          /// =========================
-          Expanded(
-            flex: 1,
+            SizedBox(height: isMobile ? 15 : 20),
 
-            child: Center(
-              child: Container(
-                width: 340,
+            Text(
+              "Welcome back to",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 18 : 22,
+                letterSpacing: 1,
+              ),
+            ),
 
-                padding: const EdgeInsets.all(30),
+            Text(
+              "SIMI RQ",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 28 : 36,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(20),
-
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-
-                      blurRadius: 10,
-
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+    Widget rightSection = Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Login Admin",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
 
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 30),
 
-                  children: [
-                    const Text(
-                      "Login Admin",
-
-                      style: TextStyle(
-                        fontSize: 28,
-
-                        fontWeight: FontWeight.bold,
-
-                        color: Colors.green,
-                      ),
+                TextField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    labelText: "Username",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                  ),
+                ),
 
-                    const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
-                    /// USERNAME
-                    TextField(
-                      controller: _usernameController,
-
-                      decoration: InputDecoration(
-                        labelText: "Username",
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    /// PASSWORD
-                    TextField(
-                      controller: _passwordController,
-
-                      obscureText: _obscurePassword,
-
-                      decoration: InputDecoration(
-                        labelText: "Password",
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// BUTTON LOGIN
-                    SizedBox(
-                      width: double.infinity,
-
-                      height: 48,
-
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade400,
-
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-
-                        onPressed: _isLoading ? null : _login,
-
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                                : const Text(
-                                  "Masuk Sebagai Admin",
-
-                                  style: TextStyle(
-                                    color: Colors.white,
-
-                                    fontSize: 18,
-                                  ),
-                                ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacementNamed(context, '/login');
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
                       },
+                    ),
+                  ),
+                ),
 
-                      child: const Text(
-                        "Kembali ke login guru",
+                const SizedBox(height: 30),
 
-                        style: TextStyle(color: Colors.blue),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade400,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ],
+                    onPressed: _isLoading ? null : _login,
+                    child:
+                        _isLoading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text(
+                              "Masuk Sebagai Admin",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
+                            ),
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 15),
+
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text(
+                    "Kembali ke login guru",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
+      ),
+    );
+
+    return Scaffold(
+      body: SafeArea(
+        child:
+            isMobile
+                ? SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: screenHeight),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: screenHeight * 0.35,
+                          width: double.infinity,
+                          child: leftSection,
+                        ),
+                        rightSection,
+                      ],
+                    ),
+                  ),
+                )
+                : Row(
+                  children: [
+                    Expanded(child: leftSection),
+                    Expanded(child: rightSection),
+                  ],
+                ),
       ),
     );
   }

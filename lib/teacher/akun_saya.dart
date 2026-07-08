@@ -141,7 +141,12 @@ class _AkunGuruPageState extends State<AkunGuruPage> {
               child: const Text("Batal"),
             ),
 
-            ElevatedButton(onPressed: updateUser, child: const Text("Simpan")),
+            ElevatedButton(
+              onPressed: () async {
+                await updateUser();
+              },
+              child: const Text("Simpan"),
+            ),
           ],
         );
       },

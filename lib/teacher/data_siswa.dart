@@ -330,7 +330,8 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                                                             ElevatedButton(
                                                               style: ElevatedButton.styleFrom(
                                                                 backgroundColor:
-                                                                    Colors.red,
+                                                                    Colors
+                                                                        .green,
                                                               ),
                                                               onPressed: () async {
                                                                 Navigator.pop(
@@ -379,6 +380,11 @@ class _DataSiswaPageState extends State<DataSiswaPage> {
                                                               },
                                                               child: const Text(
                                                                 "Hapus",
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                ),
                                                               ),
                                                             ),
                                                           ],

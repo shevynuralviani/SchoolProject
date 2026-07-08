@@ -156,8 +156,8 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                             /// ===== HEADER (DITAMBAH AKSI) =====
                             columns: const [
                               DataColumn(label: Text("No")),
+                              DataColumn(label: Text("Nama Siswa")),
                               DataColumn(label: Text("Jenis Surat")),
-                              DataColumn(label: Text("Keperluan")),
                               DataColumn(label: Text("Tahun Ajaran")),
                               DataColumn(label: Text("Tanggal Pembuatan")),
                               DataColumn(label: Text("File")),
@@ -174,8 +174,8 @@ class _SuratKeteranganPageState extends State<SuratKeteranganPage> {
                               return DataRow(
                                 cells: [
                                   DataCell(Text("${index + 1}")),
+                                  DataCell(Text(data["nama"] ?? "-")),
                                   DataCell(Text(data["jenisSurat"] ?? "-")),
-                                  DataCell(Text(data["keperluan"] ?? "-")),
                                   DataCell(Text(data["tahunAjaran"] ?? "-")),
                                   DataCell(
                                     Text(formatTanggal(data["createdAt"])),

@@ -11,6 +11,7 @@ class DataSiswaAdminContent extends StatefulWidget {
 
 class _DataSiswaAdminContentState extends State<DataSiswaAdminContent> {
   String _searchText = "";
+  String _selectedKelas = "Semua";
 
   final ScrollController _horizontalController = ScrollController();
   final ScrollController _verticalController = ScrollController();
@@ -31,27 +32,84 @@ class _DataSiswaAdminContentState extends State<DataSiswaAdminContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// SEARCH
-            SizedBox(
-              width: 650,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Cari Nama Siswa...",
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+            /// SEARCH + FILTER
+            Row(
+              children: [
+                /// SEARCH
+                SizedBox(
+                  width: 650,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Cari Nama Siswa...",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchText = value;
+                      });
+                    },
                   ),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchText = value;
-                  });
-                },
-              ),
+
+                const Spacer(),
+
+                /// FILTER KELAS
+                SizedBox(
+                  width: 200,
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream:
+                        FirebaseFirestore.instance
+                            .collection('kelas')
+                            .orderBy('nama_kelas')
+                            .snapshots(),
+                    builder: (context, snapshot) {
+                      List<String> daftarKelas = ["Semua"];
+
+                      if (snapshot.hasData) {
+                        daftarKelas.addAll(
+                          snapshot.data!.docs.map(
+                            (e) => e['nama_kelas'].toString(),
+                          ),
+                        );
+                      }
+
+                      return DropdownButtonFormField<String>(
+                        value: _selectedKelas,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: "Kelas",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        items:
+                            daftarKelas.map((kelas) {
+                              return DropdownMenuItem(
+                                value: kelas,
+                                child: Text(kelas),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedKelas = value!;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
+
+            const SizedBox(height: 15),
 
             const SizedBox(height: 15),
 
@@ -142,13 +200,22 @@ class _DataSiswaAdminContentState extends State<DataSiswaAdminContent> {
                                         doc.data() as Map<String, dynamic>;
 
                                     final nama =
-                                        (data['nama_kelas'] ?? '')
+                                        (data['nama'] ?? "")
                                             .toString()
                                             .toLowerCase();
 
-                                    return nama.contains(
+                                    final kelas =
+                                        (data['nama_kelas'] ?? "").toString();
+
+                                    final cocokSearch = nama.contains(
                                       _searchText.toLowerCase(),
                                     );
+
+                                    final cocokKelas =
+                                        _selectedKelas == "Semua" ||
+                                        kelas == _selectedKelas;
+
+                                    return cocokSearch && cocokKelas;
                                   }).toList();
 
                               return Scrollbar(
